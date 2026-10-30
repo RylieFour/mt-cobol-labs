@@ -1,0 +1,4 @@
+           05  R-Player-One-Key      pic 9(10).                         00080001
+           05  R-Player-Two-Key      pic 9(10).                         00090001
+           05  R-Player-Who-Won      pic 9(1).                          00100001
+

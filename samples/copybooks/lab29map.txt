@@ -1,0 +1,5 @@
+       01  LB29MAPI.
+           02  FILLER PIC X(12).
+       01  LB29MAPO REDEFINES LB29MAPI.
+           02  FILLER PIC X(12).
+

@@ -1,0 +1,61 @@
+       01  U279MP1I.
+           02  FILLER PIC X(12).
+           02  TRNIDL    COMP  PIC  S9(4).
+           02  TRNIDF    PICTURE X.
+           02  FILLER REDEFINES TRNIDF.
+             03 TRNIDA    PICTURE X.
+           02  TRNIDI  PIC X(4).
+           02  TASKNL    COMP  PIC  S9(4).
+           02  TASKNF    PICTURE X.
+           02  FILLER REDEFINES TASKNF.
+             03 TASKNA    PICTURE X.
+           02  TASKNI  PIC X(8).
+           02  ACTL    COMP  PIC  S9(4).
+           02  ACTF    PICTURE X.
+           02  FILLER REDEFINES ACTF.
+             03 ACTA    PICTURE X.
+           02  ACTI  PIC X(1).
+           02  KEYL    COMP  PIC  S9(4).
+           02  KEYF    PICTURE X.
+           02  FILLER REDEFINES KEYF.
+             03 KEYA    PICTURE X.
+           02  KEYI  PIC X(4).
+           02  NAMEL    COMP  PIC  S9(4).
+           02  NAMEF    PICTURE X.
+           02  FILLER REDEFINES NAMEF.
+             03 NAMEA    PICTURE X.
+           02  NAMEI  PIC X(12).
+           02  DEPTL    COMP  PIC  S9(4).
+           02  DEPTF    PICTURE X.
+           02  FILLER REDEFINES DEPTF.
+             03 DEPTA    PICTURE X.
+           02  DEPTI  PIC X(12).
+           02  ROLEL    COMP  PIC  S9(4).
+           02  ROLEF    PICTURE X.
+           02  FILLER REDEFINES ROLEF.
+             03 ROLEA    PICTURE X.
+           02  ROLEI  PIC X(12).
+           02  MSGL    COMP  PIC  S9(4).
+           02  MSGF    PICTURE X.
+           02  FILLER REDEFINES MSGF.
+             03 MSGA    PICTURE X.
+           02  MSGI  PIC X(79).
+       01  U279MP1O REDEFINES U279MP1I.
+           02  FILLER PIC X(12).
+           02  FILLER PICTURE X(3).
+           02  TRNIDO  PIC X(4).
+           02  FILLER PICTURE X(3).
+           02  TASKNO  PIC X(8).
+           02  FILLER PICTURE X(3).
+           02  ACTO  PIC X(1).
+           02  FILLER PICTURE X(3).
+           02  KEYO  PIC X(4).
+           02  FILLER PICTURE X(3).
+           02  NAMEO  PIC X(12).
+           02  FILLER PICTURE X(3).
+           02  DEPTO  PIC X(12).
+           02  FILLER PICTURE X(3).
+           02  ROLEO  PIC X(12).
+           02  FILLER PICTURE X(3).
+           02  MSGO  PIC X(79).
+

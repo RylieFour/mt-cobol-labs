@@ -1,0 +1,14 @@
+               05  FT-CONTAINER-NAME  pic x(16)                         00010005
+                   value 'U278PG-Container'.                            00011006
+               05  FT-Channel-Name    pic x(16)                         00012005
+                   value 'U279PG1-Channel1'.                            00013006
+               05  FT-Container-Field pic x(1).                         00030005
+           02  FT-Record.                                               00040005
+               05  FT-TRNIDO          PIC X(4).                         00050005
+               05  FT-TASKNO          PIC X(8).                         00052005
+               05  FT-ACTO            PIC X(1).                         00054005
+               05  FT-KEYO            PIC X(4).                         00056005
+               05  FT-NAMEO           PIC X(12).                        00058005
+               05  FT-DEPTO           PIC X(12).                        00059105
+               05  FT-ROLEO           PIC X(12).                        00059305
+
