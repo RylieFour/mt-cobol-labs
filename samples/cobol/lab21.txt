@@ -1,0 +1,37 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. LAB21.
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01  FIELD-1                PIC X(30).
+       01  FIELD-2                PIC X(30).
+       01  I                    PIC 9(2).
+       PROCEDURE DIVISION.
+           PERFORM INITIALIZE-FIELDS
+           MOVE 'ALPHA' TO FIELD-1(18:5)
+           PERFORM SHOW-FIELDS
+           MOVE SPACE TO FIELD-1(19:1)
+           MOVE 'LANX' TO FIELD-1(23:4)
+           PERFORM SHOW-FIELDS
+           MOVE FIELD-1(18:9) TO FIELD-2(1:9)
+           MOVE " WON'T STOP A T-34" TO FIELD-2(10:19)
+           PERFORM SHOW-FIELDS
+           PERFORM VARYING I FROM 1 BY 1
+               UNTIL I > 28 OR FIELD-2(I:3) = "TOP"
+           END-PERFORM
+           IF I <= 28
+               DISPLAY "TOP IS LOCATED AT: " I
+           END-IF
+           GOBACK
+           .
+       INITIALIZE-FIELDS.
+           MOVE "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" TO FIELD-1
+           MOVE "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOO" TO FIELD-2
+           .
+       SHOW-FIELDS.
+           DISPLAY "                   1         2         3"
+           DISPLAY "          123456789012345678901234567890"
+           DISPLAY "FIELD-1: " FIELD-1
+           DISPLAY "FIELD-2: " FIELD-2
+           DISPLAY SPACE
+           .
+

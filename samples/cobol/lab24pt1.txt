@@ -1,0 +1,122 @@
+       Identification Division.                                         00010000
+       Program-Id. AIRPORT.                                             00020000
+      ***************************************************************** 00030000
+      * Starter code for lab exercise on COBOL tables.                  00040000
+      ***************************************************************** 00050000
+       Data Division.                                                   00060000
+       Working-Storage Section.                                         00070000
+       01  Airport-Table-Data.                                          00080000
+           05  filler                   pic x(3) value "ATL".           00090000
+           05  filler                   pic x(4) value "KATL".          00100000
+           05  filler                   pic x(30) value "Atlanta".      00110000
+           05  filler                   pic x(70) value                 00120000
+               "Hartsfield-Jackson Atlanta International Airport".      00130000
+           05  filler                   pic x(3) value "CAN".           00140000
+           05  filler                   pic x(4) value "ZGGG".          00150000
+           05  filler                   pic x(30) value "Guangzhou".    00160000
+           05  filler                   pic x(70) value                 00170000
+               "Guangzhou Baiyun International Airport".                00180000
+           05  filler                   pic x(3) value "DEN".           00190000
+           05  filler                   pic x(4) value "KDEN".          00200000
+           05  filler                   pic x(30) value "Denver".       00210000
+           05  filler                   pic x(70) value                 00220000
+               "Denver International Airport".                          00230000
+           05  filler                   pic x(3) value "DFW".           00240000
+           05  filler                   pic x(4) value "KDFW".          00250000
+           05  filler                   pic x(30) value "Dallas".       00260000
+           05  filler                   pic x(70) value                 00270000
+               "Dallas-Ft. Worth International Airport".                00280000
+           05  filler                   pic x(3) value "IST".           00290000
+           05  filler                   pic x(4) value "LTFM".          00300000
+           05  filler                   pic x(30) value "Istanbul".     00310000
+           05  filler                   pic x(70) value                 00320000
+               "Istanbul Airport".                                      00330000
+           05  filler                   pic x(3) value "LKA".           00340000
+           05  filler                   pic x(4) value "WRKL".          00350000
+           05  filler pic x(30) value "Nusa Tenggara Timur".            00360000
+           05  filler                   pic x(70) value                 00370000
+               "Gewayentana Airport".                                   00380000
+           05  filler                   pic x(3) value "LOS".           00390000
+           05  filler                   pic x(4) value "DNMM".          00400000
+           05  filler                   pic x(30) value "Lagos".        00410000
+           05  filler                   pic x(70) value                 00420000
+               "Murtala Mohammed International Airport".                00430000
+           05  filler                   pic x(3) value "SYD".           00440000
+           05  filler                   pic x(4) value "YSSY".          00450000
+           05  filler                   pic x(30) value "Sydney".       00460000
+           05  filler                   pic x(70) value                 00470000
+               "Sydney Airport".                                        00480000
+                                                                        00481000
+       01  Airport-Table redefines Airport-Table-Data.                  00490000
+           05  Airport-Info occurs 8 times                              00500000
+                   ascending key Airport-IATA-Code                      00510004
+                   indexed by Airport-Ix.                               00520000
+               10  Airport-IATA-Code    pic x(3).                       00530000
+               10  Airport-ICAO-Code    pic x(4).                       00540000
+               10  Airport-Nearest-City pic x(30).                      00550000
+               10  Airport-Name         pic x(70).                      00560000
+                                                                        00570000
+       01  Search-City-Name             pic x(30).                      00580000
+       01  Search-IATA-Code             pic x(3).                       00590000
+       01  Inv-Total-Display            pic $,$$$,$$$,$$$,$$9.99+.      00600000
+       Procedure Division.                                              00620000
+                                                                        00630000
+      *-----------------------------------------------------------------00640000
+      * 1. Search the airport table for a city name.                    00650000
+      *    If the city is found in the table, display                   00660000
+      *    "<airport name> is near <city name>".                        00670000
+      *    If the city is not found in the table, display               00680000
+      *    "No airport found near <city name>".                         00690000
+      *                                                                 00700000
+      *    You can use SEARCH or PERFORM VARYING to search the table.   00710000
+      *    Code your search logic in a separate paragraph and perform   00720000
+      *    the paragraph once for each of the following city names:     00730000
+      *    - Guangzhou                                                  00740000
+      *    - Fargo                                                      00750000
+      *-----------------------------------------------------------------00760000
+           move 'Guangzhou' to Search-City-Name                         00770004
+           perform Search-Table                                         00780004
+           move 'Fargo' to Search-City-Name                             00781004
+           perform Search-Table                                         00782004
+      *-----------------------------------------------------------------00790000
+      * 2. Do a binary search of the airport table.                     00800000
+      *    The airport table is already in order by IATA code.          00810000
+      *    If the city is found in the table, display                   00820000
+      *    "<IATA code> is assigned to <airport name>".                 00830000
+      *    If IATA code is not found in the table, display              00840000
+      *    "No airport found with IATA code <IATA code>".               00850000
+      *                                                                 00860000
+      *    Use SEARCH ALL to search the table.                          00870000
+      *    Code your search logic in a separate paragraph and perform   00880000
+      *    the paragraph once for each of the following IATA codes:     00890000
+      *    - LOS                                                        00900000
+      *    - XYZ                                                        00910000
+      *-----------------------------------------------------------------00920000
+                                                                        00930000
+           move 'LOS' to Search-IATA-Code                               00931005
+           perform Binary-Search                                        00932005
+           move 'XYZ' to Search-IATA-Code                               00933005
+           perform Binary-Search                                        00934005
+                                                                        00940000
+           goback                                                       00950000
+           .                                                            00960000
+       Search-Table.                                                    00970001
+           set Airport-Ix to 1                                          01080004
+           search Airport-Info                                          01090004
+             at end                                                     01100003
+               display 'No airport found near ' Search-City-Name        01110004
+             when Airport-Nearest-City(Airport-Ix) = Search-City-Name   01120003
+               display Airport-Name(Airport-Ix)                         01130004
+                       ' is found near ' Search-City-Name               01131004
+           end-search.                                                  01140004
+       Binary-Search.                                                   01150004
+           set Airport-Ix to 1                                          01160004
+           SEARCH ALL Airport-Info                                      01170004
+             at end                                                     01180004
+               display 'No airport found with IATA code '               01190004
+                       Search-IATA-Code                                 01191004
+             when Airport-IATA-Code(Airport-Ix) = Search-IATA-Code      01200004
+               display Search-IATA-Code ' is assigned to '              01210004
+                       Airport-Name(Airport-Ix)                         01211004
+           end-search.                                                  01220004
+

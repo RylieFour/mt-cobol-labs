@@ -1,0 +1,357 @@
+       Identification Division.
+       Program-Id. LAB27.
+      ***********************************************************
+       Environment Division.
+       Input-Output Section.
+       File-Control.
+           Select Master-File
+           Assign to MASTER
+           Organization is indexed
+           Access mode is dynamic
+           Record key is M-key
+           File Status is Master-Status.
+      **********
+           Select Results
+           Assign to RESULTS
+           Organization is sequential
+           Access mode is sequential
+           File Status is Results-Status.
+      **********
+           Select Outfile
+           Assign to OUTFILE
+           Organization is sequential
+           Access mode is sequential
+           File Status is Outfile-Status.
+      ***********************************************************
+       Data Division.
+       File Section.
+       FD  Master-File
+           Record contains 44 characters.
+       01  M-Record.
+           copy MASTER27.
+      **********
+       FD  Results
+           Recording mode is F
+           Record contains 31 characters.
+       01  R-Record.
+           copy RESULTS.
+      **********
+       FD  Outfile
+           Recording mode is F
+           Record contains 52 characters.
+       01  O-Record.
+           copy OUTFILE.
+
+      **********
+       Working-Storage Section.
+       01  Error-Checking-Fields.
+           05  Error-Condition           pic x(2).
+             88  In-Error                value '01'.
+       01  W-Fields.
+           05  W-Winner-Key              pic 9(10).
+           05  W-Winner-Rating           pic 9(4).
+           05  W-Loser-Key               pic 9(10).
+           05  W-Loser-Rating            pic 9(4).
+           05  W-Rating                  pic 9(4).
+           05  W-Add-Score               pic 9(2).
+           05  W-Final-Score             pic 9(4).
+           05  W-Higher-Rated-Win        pic 9(2).
+           05  W-Lower-Rated-Win         pic 9(2).
+           05  W-Rating-Difference       pic 9(4).
+           05  W-Player-One-Rating       pic 9(4).
+           05  W-Player-Two-Rating       pic 9(4).
+       01  File-Status-Areas.
+           05  Master-Status      pic x(2).
+              88  M-Success          value "00".
+              88  M-Wrong-Reclen     value "04".
+              88  M-Record-Not-Found value "23".
+              88  M-File-Not-Found   value "35".
+           05  Results-Status        pic x(2).
+              88  R-Infile-Success   value "00".
+              88  R-End-of-Input     value "10".
+              88  R-File-Not-Found   value "35".
+           05  Outfile-Status        pic x(2).
+              88  O-Outfile-Success  value "00".
+              88  O-End-of-Input     value "10".
+              88  O-File-Not-Found   value "35".
+      ***********************************************************
+       Procedure Division.
+           perform 1000-Housekeeping
+           perform 2000-Mainline
+             until R-End-of-Input
+           perform 3000-Wrap-Up
+           goback.
+      ***********************************************************
+       1000-Housekeeping.
+           perform 1100-Initialize-Fields
+           perform 1200-Open-Master
+           perform 1300-Open-Results.
+           perform 1400-Open-Outfile.
+      ***********************************************************
+       1100-Initialize-Fields.
+           move zeroes to W-Final-Score
+                          W-Higher-Rated-Win
+                          W-Lower-Rated-Win
+                          W-Rating-Difference
+                          W-Player-One-Rating
+                          W-Player-Two-Rating
+           move spaces to Error-Condition.
+      ***********************************************************
+       1200-Open-Master.
+           open i-o Master-File
+           evaluate True
+             when M-Success
+               continue
+             when M-File-Not-Found
+               display 'Master file not found'
+               move 12 to return-code
+               goback
+             when other
+               display 'Status ' master-status ' on open'
+               goback
+             end-evaluate.
+      ***********************************************************
+       1300-Open-Results.
+           open input Results
+      *
+           if R-Infile-Success
+              continue
+           else
+              display "Got " Results-Status " on Open Input"
+              move 12 to Return-Code
+              goback.
+      ***********************************************************
+       1400-Open-Outfile.
+      *
+           open output outfile
+      *
+           if O-Outfile-Success
+              continue
+           else
+              display "Got " Outfile-Status " on Open Input"
+              move 12 to Return-Code
+              goback.
+      ***********************************************************
+       1500-Read-Master.
+           read Master-File
+           key is M-Key
+           invalid key
+             display 'Record not found'
+             ' for key ' M-Key
+           not invalid key
+             perform 1550-Check-Master-Exceptions.
+      ***********************************************************
+       1550-Check-Master-Exceptions.
+           if M-Ranking not numeric
+             move M-Key to Out-Key
+             move 'Ranking not Numeric' to Out-Reason
+             perform 1800-Write-Outfile
+             set In-Error to true
+           end-if.
+      ***********************************************************
+       1600-Read-Results.
+           read Results
+      *
+           if not R-Infile-Success
+           and not R-End-of-Input
+             display "Results Status "
+             Results-Status " on read"
+             move 12 to Return-Code
+             goback
+           end-if
+           perform 1650-Check-Results-Exceptions.
+      ***********************************************************
+       1650-Check-Results-Exceptions.
+           if R-Player-Who-Won is Numeric
+             if R-Player-Who-Won not = 1 and not = 2
+               move R-Player-One-Key to Out-Key
+               string
+               ' vs '
+               R-Player-Two-Key
+               ' no winner'
+               delimited by size
+               into Out-Reason
+               end-string
+               perform 1800-Write-Outfile
+             set In-Error to true
+             end-if
+           else
+             move R-Player-One-Key to Out-Key
+             string
+             ' vs '
+             R-Player-Two-Key
+             ' win byte not numeric'
+             delimited by size
+             into Out-Reason
+             end-string
+             perform 1800-Write-Outfile
+             set In-Error to true
+           end-if.
+      ***********************************************************
+       1700-Write-Master.
+           read Master-File
+           key is M-Key
+           invalid key
+             display 'record not found'
+             ' for key ' M-Key
+             move M-Key to Out-Key
+             move 'Record not found' to Out-Reason
+             perform 1800-Write-Outfile
+             set In-Error to true
+           not invalid key
+             move W-Final-Score to M-Ranking
+             rewrite M-Record
+               invalid key
+                 display 'Rewrite failed'
+                 ' for key ' M-Key
+                 move 12 to return-code
+                 goback
+             end-rewrite
+           end-read.
+      ***********************************************************
+       1800-Write-Outfile.
+           write O-Record
+           if O-Outfile-Success
+             continue
+           else
+              display "Got " Outfile-Status
+                   " on OPEN OUTFILE"
+              move 12 to Return-Code
+              goback.
+      ***********************************************************
+       2000-Mainline.
+           perform 1100-Initialize-Fields
+           perform 1600-Read-Results
+           if not In-Error
+             perform 2100-Populate-Player-Ratings
+             perform 2200-Compute-Score-Difference
+             perform 2300-Build-Table
+             perform 2400-Update-Scores
+           end-if.
+      ***********************************************************
+       2100-Populate-Player-Ratings.
+           move R-Player-One-Key to M-Key
+           perform 1500-Read-Master
+           move M-Ranking to W-Player-One-Rating
+           move R-Player-Two-Key to M-Key
+           perform 1500-Read-Master
+           move M-Ranking to W-Player-Two-Rating.
+      ***********************************************************
+       2200-Compute-Score-Difference.
+      *
+           if W-Player-One-Rating >= W-Player-Two-Rating
+             compute W-Rating-Difference =
+                     W-Player-One-Rating - W-Player-Two-Rating
+           else
+             compute W-Rating-Difference =
+                     W-Player-Two-Rating - W-Player-One-Rating
+           end-if.
+      *
+           perform 2300-Build-Table
+      ***********************************************************
+       2300-Build-Table.
+           evaluate True
+             when W-Rating-Difference > 238
+               move 0 to W-Higher-Rated-Win
+               move 50 to W-Lower-Rated-Win
+
+             when W-Rating-Difference > 213
+               move 1 to W-Higher-Rated-Win
+               move 45 to W-Lower-Rated-Win
+
+             when W-Rating-Difference > 188
+               move 1 to W-Higher-Rated-Win
+               move 40 to W-Lower-Rated-Win
+
+             when W-Rating-Difference > 163
+               move 2 to W-Higher-Rated-Win
+               move 35 to W-Lower-Rated-Win
+
+             when W-Rating-Difference > 138
+               move 2 to W-Higher-Rated-Win
+               move 30 to W-Lower-Rated-Win
+
+             when W-Rating-Difference > 113
+               move 3 to W-Higher-Rated-Win
+               move 25 to W-Lower-Rated-Win
+
+             when W-Rating-Difference > 88
+               move 4 to W-Higher-Rated-Win
+               move 20 to W-Lower-Rated-Win
+
+             when W-Rating-Difference > 63
+               move 5 to W-Higher-Rated-Win
+               move 16 to W-Lower-Rated-Win
+
+             when W-Rating-Difference > 38
+               move 6 to W-Higher-Rated-Win
+               move 13 to W-Lower-Rated-Win
+
+             when W-Rating-Difference > 13
+               move 7 to W-Higher-Rated-Win
+               move 10 to W-Lower-Rated-Win
+
+             when W-Rating-Difference >= 0
+               move 8 to W-Higher-Rated-Win
+               move 8 to W-Lower-Rated-Win
+           end-evaluate.
+      ***********************************************************
+       2400-Update-Scores.
+      *
+               if R-Player-Who-Won = 1
+                 move R-Player-One-Key to W-Winner-Key
+                 move W-Player-One-Rating to W-Winner-Rating
+                 move R-Player-Two-Key to W-Loser-Key
+                 move W-Player-Two-Rating to W-Loser-Rating
+               else
+                 move R-Player-Two-Key to W-Winner-Key
+                 move W-Player-Two-Rating to W-Winner-Rating
+                 move R-Player-One-Key to W-Loser-Key
+                 move W-Player-One-Rating to W-Loser-Rating
+               end-if
+      *
+               if W-Winner-Rating > W-Loser-Rating
+                 move W-Higher-Rated-Win to W-Add-Score
+               else
+                 move W-Lower-Rated-Win to W-Add-Score
+               end-if
+      *
+               move W-Winner-Key to M-Key
+               move W-Winner-Rating to W-Rating
+               perform 2500-Add-Points
+               move W-Loser-Key to M-Key
+               move W-Loser-Rating to W-Rating
+               perform 2600-Subtract-Points.
+      *
+      ***********************************************************
+       2500-Add-Points.
+           compute W-Final-Score = W-Rating + W-Add-Score.
+           display 'adding points: '  w-rating ' + ' w-add-score
+           display '= ' w-final-score ' for ' M-Key
+           perform 1700-Write-Master
+           move zeroes to W-Final-Score
+           move zeroes to W-Rating.
+      ***********************************************************
+       2600-Subtract-Points.
+      *
+           if W-Rating <= 100 and W-Add-Score > 3
+             compute W-Add-Score = 3
+           end-if
+      *
+           compute W-Final-Score = W-Rating - W-Add-Score.
+      *
+           if W-Final-Score < 0
+             compute W-Final-Score = 0
+           end-if
+      *
+           display 'Subtrct points: '  w-rating ' - ' w-add-score
+           display '= ' w-final-score ' for ' M-Key
+           perform 1700-Write-Master
+           move zeroes to W-Final-Score
+           move zeroes to W-Rating.
+      ***********************************************************
+       3000-Wrap-Up.
+           close Master-File
+           close Results.
+           close Outfile.
+

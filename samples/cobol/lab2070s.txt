@@ -1,0 +1,33 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. STYLES.
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01  WS-COMPANY-INFO.
+           05  WS-COMPANY-NAME               PIC X(60).
+           05  WS-COMPANY-INCEPTION.
+               10  WS-INCEPTION-YEAR         PIC X(04).
+               10  WS-INCEPTION-MONTH        PIC X(02).
+               10  WS-INCEPTION-DAY          PIC X(02).
+           05  WS-COMPANY-STANDING           PIC X.
+               88 IN-GOOD-STANDING        VALUE "1".
+       01  WS-SHOW-STANDING                  PIC X(03).
+       PROCEDURE DIVISION.
+           PERFORM A200-INITIALIZATION.
+           MOVE "ACME CORPORATION" TO WS-COMPANY-NAME.
+           MOVE "19470415" TO WS-COMPANY-INCEPTION.
+           SET IN-GOOD-STANDING TO TRUE.
+           PERFORM A300-DISPLAY-COMPANY-INFO.
+           STOP RUN.
+       A200-INITIALIZATION.
+           MOVE SPACES TO WS-COMPANY-INFO WS-SHOW-STANDING.
+       A300-DISPLAY-COMPANY-INFO.
+           DISPLAY "COMPANY NAME: " WS-COMPANY-NAME.
+           DISPLAY "INCEPTION: " WS-INCEPTION-YEAR "-"
+                                 WS-INCEPTION-MONTH "-"
+                                 WS-INCEPTION-DAY.
+           IF IN-GOOD-STANDING
+               MOVE "YES" TO WS-SHOW-STANDING
+           ELSE
+               MOVE "NO" TO WS-SHOW-STANDING.
+           DISPLAY "IN GOOD STANDING: " WS-SHOW-STANDING.
+

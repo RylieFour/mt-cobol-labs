@@ -1,0 +1,21 @@
+       Identification Division.
+      *****************************************************************
+      * Sending plain text to a 3270 device.
+      *****************************************************************
+       Program-Id. Lab29.
+       Data Division.
+       Working-Storage Section.
+           copy LB29MAP.
+       Procedure Division.
+           EXEC CICS SEND
+               FROM(LB29MAPO)
+               MAP('LB29MAP')
+               MAPSET('LB29MSD')
+               ERASE
+               FREEKB
+           END-EXEC
+           EXEC CICS
+               RETURN
+           END-EXEC
+           .
+

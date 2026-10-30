@@ -1,0 +1,6 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. LAB17.
+       PROCEDURE DIVISION.
+           GOBACK
+           .
+

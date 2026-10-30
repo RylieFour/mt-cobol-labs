@@ -1,0 +1,97 @@
+       Identification Division.                                         00010001
+       Program-Id. LAB24PT2.                                            00020003
+      ***************************************************************** 00030001
+      * Starter code for lab exercise on COBOL tables.                  00040001
+      ***************************************************************** 00050001
+       Data Division.                                                   00060001
+       Working-Storage Section.                                         00070001
+       01  Final-Invoice-Amount-Disp pic $,$$$,$$$,$$$,$$9.99.          00071005
+       01  Line-Amount-Disp pic $,$$$,$$$,$$$,$$9.99.                   00072005
+       01  Item-Amount-Disp pic $$,$$$,$$$,$$9.99.                      00073005
+       01  Inv-Line-Count               pic 9(2).                       00080001
+       01  Invoice.                                                     00090001
+           05  Inv-Total                pic s9(13)v99.                  00100001
+           05  Inv-Line occurs 1 to 10 times                            00110001
+                        depending on Inv-Line-Count                     00120001
+                        indexed by Line-Ix.                             00130001
+               10  Inv-Line-Total       pic s9(11)v99.                  00140001
+               10  Inv-Line-Item occurs 10 times                        00150001
+                                 indexed by Item-Ix.                    00160001
+                   15  Inv-Product      pic x(8).                       00170001
+                   15  Inv-Unit-Price   pic s9(5)v99.                   00180001
+                   15  Inv-Quantity     pic 9(5).                       00190001
+                   15  Inv-Ext-Price    pic s9(7)v99.                   00200001
+                   15  Inv-Sales-Tax    pic sv9(5).                     00210001
+                                                                        00220001
+       Procedure Division.                                              00230001
+      * Table initialization - don't change this.                       00240001
+           move 2 to Inv-Line-Count                                     00250001
+           move "ABCDEFGH" to Inv-Product    ( 1 1 )                    00260001
+           move +15.47     to Inv-Unit-Price ( 1 1 )                    00270001
+           move 2          to Inv-Quantity   ( 1 1 )                    00280001
+           move +0.025     to Inv-Sales-Tax  ( 1 1 )                    00290001
+           move "BCDEFGHI" to Inv-Product    ( 1 2 )                    00300001
+           move +66.12     to Inv-Unit-Price ( 1 2 )                    00310001
+           move 1          to Inv-Quantity   ( 1 2 )                    00320001
+           move +0.025     to Inv-Sales-Tax  ( 1 2 )                    00330001
+           move "CDEFGHIJ" to Inv-Product    ( 1 3 )                    00340001
+           move +2.88      to Inv-Unit-Price ( 1 3 )                    00350001
+           move 6          to Inv-Quantity   ( 1 3 )                    00360001
+           move +0.000     to Inv-Sales-Tax  ( 1 3 )                    00370001
+           move "DEFGHIJK" to Inv-Product    ( 1 4 )                    00380001
+           move +29.99     to Inv-Unit-Price ( 1 4 )                    00390001
+           move 3          to Inv-Quantity   ( 1 4 )                    00400001
+           move +0.025     to Inv-Sales-Tax  ( 1 4 )                    00410001
+           move spaces     to Inv-Product    ( 1 5 )                    00420001
+           move "EFGHIJKL" to Inv-Product    ( 2 1 )                    00430001
+           move +3.50      to Inv-Unit-Price ( 2 1 )                    00440001
+           move 9          to Inv-Quantity   ( 2 1 )                    00450001
+           move +0.025     to Inv-Sales-Tax  ( 2 1 )                    00460001
+           move "FGHIJKLM" to Inv-Product    ( 2 2 )                    00470001
+           move +2.44      to Inv-Unit-Price ( 2 2 )                    00480001
+           move 8          to Inv-Quantity   ( 2 2 )                    00490001
+           move +0.025     to Inv-Sales-Tax  ( 2 2 )                    00500001
+           move spaces     to Inv-Product    ( 2 3 )                    00510001
+                                                                        00520001
+      *-----------------------------------------------------------------00530001
+      * Iterate over the table to compute the invoice total.            00540001
+      *                                                                 00550001
+      * For each line item, multiply unit price by quantity and apply   00560001
+      * the salex tax.                                                  00570001
+      *                                                                 00580001
+      * Sum the line item amounts and sum the line totals to get the    00590001
+      * invoice total.                                                  00600001
+      *-----------------------------------------------------------------00610001
+           move zeroes to Inv-Total                                     00611003
+           set line-ix to 1                                             00612003
+      * Loop through lines                                              00613005
+           perform varying line-ix from 1 by 1                          00620003
+             until line-ix > Inv-Line-Count                             00621003
+             set item-ix to 1                                           00621103
+             move zeroes to inv-line-total(line-ix)                     00621305
+      * Loop through items                                              00621405
+             perform varying item-ix from 1 by 1                        00622003
+                until item-ix > 5                                       00623003
+                if Inv-Unit-Price(line-ix item-ix) is numeric           00623103
+                and Inv-Quantity(line-ix item-ix) is numeric            00623203
+                and Inv-Sales-Tax(line-ix item-ix) is numeric           00623303
+      * Compute sales total for items in line                           00623405
+                  compute Inv-Line-Total(line-ix) =                     00623503
+                          Inv-Line-Total(line-ix) +                     00623603
+                          ((Inv-Unit-Price(line-ix item-ix) *           00623703
+                           Inv-Quantity(line-ix item-ix)) *             00623803
+                          (1 + Inv-Sales-Tax(line-ix item-ix)))         00623903
+                  move inv-line-total(line-ix)                          00624006
+                       to item-Amount-Disp                              00624106
+                       display 'Item Total: ' item-Amount-Disp          00624205
+                       compute Inv-Total = Inv-Total +                  00624307
+                       Inv-Line-Total(line-ix)                          00624407
+                       move zeroes to inv-line-total(line-ix)           00624507
+                end-if                                                  00624603
+             end-perform                                                00624703
+           end-perform                                                  00625003
+           move inv-total to Final-Invoice-Amount-Disp                  00625105
+           display 'Final Total: ' Final-Invoice-Amount-Disp            00626005
+           goback                                                       00630001
+           .                                                            00640001
+

@@ -1,0 +1,37 @@
+       Identification Division.
+       Program-Id. STYLES.
+       Data Division.
+       Working-Storage Section.
+       01  CompanyInfo.
+           05  CompanyName               PIC X(60).
+           05  CompanyInception.
+               10  InceptionYear         PIC X(04).
+               10  InceptionMonth        PIC X(02).
+               10  InceptionDay          PIC X(02).
+           05  CompanyStanding           PIC X.
+               88 InGoodStanding        VALUE "1".
+       01  ShowStanding                  PIC X(03).
+       Procedure Division.
+           PERFORM 1000-INITIALIZATION
+           MOVE "ACME CORPORATION" TO CompanyName
+           MOVE "19470415" TO CompanyInception
+           SET InGoodStanding TO TRUE
+           PERFORM 2000-Display-Company-Info
+           GOBACK
+           .
+       1000-Initialization.
+           MOVE SPACES TO CompanyInfo ShowStanding
+           .
+       2000-Display-Company-Info.
+           DISPLAY "COMPANY NAME: " CompanyName
+           DISPLAY "INCEPTION: " InceptionYear "-"
+                                 InceptionMonth "-"
+                                 InceptionDay
+           IF InGoodStanding
+               MOVE "YES" TO ShowStanding
+           ELSE
+               MOVE "NO" TO ShowStanding
+           END-IF
+           DISPLAY "IN GOOD STANDING: " ShowStanding
+           .
+

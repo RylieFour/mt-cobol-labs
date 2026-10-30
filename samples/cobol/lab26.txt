@@ -1,0 +1,259 @@
+       Identification Division.
+       Program-Id. LAB26.
+      ***********************************************************
+       Environment Division.
+       Input-Output Section.
+       File-Control.
+           Select Warehouse
+           Assign to INFILE1
+           Organization is sequential
+           Access mode is sequential
+           File Status is Warehouse-Status.
+      **********
+           Select Updates
+           Assign to INFILE2
+           Organization is sequential
+           Access mode is sequential
+           File Status is Updates-Status.
+      **********
+           Select Outfile
+           Assign to OUTFILE
+           Organization is sequential
+           Access mode is sequential
+           File Status is Outfile-Status.
+      ***********************************************************
+       Data Division.
+       File Section.
+       FD  Warehouse
+           Recording mode is F
+           Record contains 80 characters.
+       01  W-Record.
+           copy WARES.
+      **********
+       FD  Updates
+           Recording mode is F
+           Record contains 80 characters.
+       01  U-Record.
+           copy Inventry.
+      **********
+       FD  Outfile
+           Recording mode is F
+           Record contains 80 characters.
+       01  O-Record.
+           05  Out-SKU               pic x(12).
+           05  Out-Quantity          pic x(4).
+           05  Out-Reorder-Point     pic x(4).
+      **********
+       Working-Storage Section.
+       01  WS-Order-Num              pic 9(4).
+       01  WS-Quantity               pic s9(5).
+       01  WS-W-Quantity             pic s9(4).
+       01  WS-U-Quantity             pic 9(4).
+       01  WS-Previous-Sku           pic x(12).
+       01  WO-Record.
+           05  WO-SKU                pic x(12).
+           05  WO-Quantity           pic 9(4).
+           05  WO-Reorder-Point      pic 9(4).
+       01  Error-Checking-Fields.
+           05  Errors-Found          pic 9.
+              88  No-Errors          value 1.
+              88  Error-Found        value 2.
+              88  Item-Record-Bad    value 3.
+       01  File-Status-Areas.
+           05  Warehouse-Status      pic x(2).
+              88  W-Infile-Success   value "00".
+              88  W-End-of-Input     value "10".
+              88  W-File-Not-Found   value "35".
+           05  Updates-Status        pic x(2).
+              88  U-Infile-Success   value "00".
+              88  U-End-of-Input     value "10".
+              88  U-File-Not-Found   value "35".
+           05  Outfile-Status        pic x(2).
+              88  O-Outfile-Success  value "00".
+              88  O-End-of-Input     value "10".
+              88  O-File-Not-Found   value "35".
+      ***********************************************************
+       Procedure Division.
+           perform 1000-Housekeeping
+           perform 2000-Process-Data
+              until W-End-of-Input
+           perform 3000-Wrap-Up
+           goback.
+      ***********************************************************
+       1000-Housekeeping.
+           move spaces to WS-Previous-Sku
+           perform 1050-Initialize-Fields
+           open input Warehouse
+      *
+           if W-Infile-Success
+              continue
+           else
+              display "Got " Warehouse-Status " on Open Input"
+              move 12 to Return-Code
+              goback
+           end-if
+      *
+           open output outfile
+      *
+           if O-Outfile-Success
+              continue
+           else
+              display "Got " Outfile-Status " on Open Input"
+              move 12 to Return-Code
+              goback.
+      ***********************************************************
+       1050-Initialize-Fields.
+           move 0 to Errors-Found
+           move zeroes to WS-Order-Num
+           move zeroes to WS-Quantity
+           move zeroes to WS-W-Quantity
+           move zeroes to WS-U-Quantity
+           move low-values to WO-Record.
+      ***********************************************************
+       2000-Process-Data.
+           perform 2200-Read-Warehouse
+      *
+           evaluate True
+             when W-Infile-Success
+               continue
+             when W-End-of-Input
+               display "Empty input file"
+               goback
+             when other
+               display "File Status "
+                   Warehouse-Status " on read"
+               move 12 to Return-Code
+               goback
+           end-evaluate
+      *
+           perform 2250-Check-For-Updates.
+      ***********************************************************
+       2200-Read-Warehouse.
+           perform 1050-Initialize-Fields
+           read Warehouse
+      *
+           if not W-Infile-Success
+           and not W-End-of-Input
+               display "Warehouse Status "
+               Warehouse-Status " on read"
+               move 12 to Return-Code
+               goback
+           end-if.
+      ***********************************************************
+       2250-Check-For-Updates.
+           perform 2300-Open-Updates
+           perform 2400-Read-Updates
+              until U-End-of-Input or No-Errors
+              or Item-Record-Bad
+      *
+           if not Item-Record-Bad
+             if item-Sku not = Upd-Sku
+               Move Item-Quantity to WS-Quantity
+             end-if
+             perform 2500-Write-File
+             move Item-Sku to WS-Previous-Sku.
+      *
+           close Updates.
+      ***********************************************************
+       2300-Open-Updates.
+           open input Updates
+      *
+           if U-Infile-Success
+              continue
+           else
+              display "Got " Updates-Status " on Open Input"
+              move 12 to Return-Code
+              goback.
+      ***********************************************************
+       2400-Read-Updates.
+           perform 1050-Initialize-Fields
+           read Updates
+      *
+           if not U-Infile-Success
+           and not U-End-of-Input
+           display "Updates Status "
+               Updates-Status " on read"
+               move 12 to Return-Code
+               goback
+           end-if
+      *
+           perform 2450-Check-for-Match-SKUs.
+      ***********************************************************
+       2450-Check-for-Match-SKUs.
+           perform 2450-Check-For-Exceptions
+      *
+           if No-Errors
+             if Upd-SKU = Item-SKU
+                 if U-End-of-Input
+                 display 'Im here'
+                   compute WS-Quantity = Item-Quantity.
+      ***********************************************************
+       2450-Check-For-Exceptions.
+      * Handle duplicate INPUT transactions
+      *
+           if Item-Sku = WS-Previous-Sku
+             move 2 to Errors-Found
+             display 'Duplicate Sku: ' Item-Sku ' = ' WS-Previous-Sku.
+      *
+           if ITEM-Quantity is not numeric
+             move 3 to Errors-Found
+             display Item-Sku ' Item-Quantity not numeric: '
+                     Item-Quantity.
+      *
+           if ITEM-Reorder-Point is not numeric
+             move 3 to Errors-Found
+             display Item-Sku ' Item-Reorder point not numeric: '
+                     Item-Reorder-Point.
+      *
+           move Upd-Change(2:4) to WS-U-Quantity
+      *
+           if Upd-SKU = Item-SKU
+
+             if WS-U-Quantity is not numeric
+               move 2 to Errors-Found
+               display Item-Sku ' UPD-Change not numeric: ' Item-SKU
+                       ws-u-quantity
+             end-if
+
+             if Upd-change(1:1) = '-'
+               compute WS-Quantity = Item-Quantity - Upd-Change
+               if WS-Quantity < 0
+                 move 2 to Errors-Found
+                 Display 'Cannot complete transaction for '
+                         Item-SKU ' Insufficient Inventory'
+                         Move zero to WS-Quantity
+               else
+                 if WS-Quantity < Item-Reorder-Point
+                    compute Ws-Order-Num
+                            = Item-Reorder-Point - WS-Quantity
+                    display Item-Reorder-Point ' > ' Ws-Quantity
+                    Display 'Ordering ' Ws-Order-Num ' units of '
+                    Item-SKU
+                 end-if
+               end-if
+               else
+               move Upd-Change(2:4) to WS-U-Quantity
+               compute WS-Quantity = Item-Quantity + WS-U-Quantity
+             end-if
+      *
+           if Errors-Found = 0
+             move 1 to Errors-Found.
+      ***********************************************************
+       2500-Write-File.
+           move ITEM-SKU to WO-SKU
+           move WS-Quantity to WO-Quantity
+           move ITEM-Reorder-Point to WO-Reorder-Point
+           write O-Record from WO-Record
+      *
+           if O-Outfile-Success
+             continue
+           else
+              display "Got " Outfile-Status
+                   " on OPEN OUTFILE"
+              move 12 to Return-Code
+              goback.
+      ***********************************************************
+       3000-Wrap-Up.
+           close Warehouse
+           close Outfile.
+

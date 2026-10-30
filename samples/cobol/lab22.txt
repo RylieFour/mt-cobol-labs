@@ -1,0 +1,147 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. LAB22.
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01  CITY-LIST.
+           05  FILLER PIC X(100) VALUE
+               "BOSTON,CHICAGO;NEW YORK CITY,LOS ANGELES;ATLANTA".
+
+       01  NAME-PARTS.
+           05  NAME-LANG           PIC X(2).
+               88  ENGLISH         VALUE "EN".
+               88  SPANISH         VALUE "ES".
+           05  ENGLISH-NAME.
+               10  FIRST-NAME      PIC X(30).
+               10  MIDDLE-NAME     PIC X(30).
+               10  LAST-NAME       PIC X(30).
+               10  FILLER          PIC X(30).
+           05  SPANISH-NAME REDEFINES ENGLISH-NAME.
+               10  PRIMER-NOMBRE   PIC X(30).
+               10  SEGUNDO-NOMBRE  PIC X(30).
+               10  PRIMER-APELLIDO PIC X(30).
+               10  SEGUNDO-APELLIDO PIC X(30).
+       01  FORMATTED-NAME          PIC X(120).
+       01  STRING-LISTS.
+           05  STRING-LIST PIC X(30)
+           OCCURS 8 TIMES INDEXED BY CITY-I.
+       01  TEXT-WITH-EMBEDDED-SPACES.
+           05  FILLER PIC X(60) VALUE
+               "   WITH   FRIENDS LIKE     THESE  WHO NEEDS   ENEMIES?".
+
+       PROCEDURE DIVISION.
+      *-----------------------------------------------------------------
+      * 1. EXTRACT CITY NAMES FROM A DELIMITED LIST.
+      *    ADD ANY NECESSARY ENTRIES IN THE WORKING-STORAGE SECTION.
+      *    USE THE UNSTRING STATEMENT TO EXTRACT THE FIRST THREE CITY
+      *    NAMES FROM THE LIST. IGNORE THE REMAINDER OF THE LIST.
+      *    USE A DISPLAY STATEMENT TO OUTPUT THE THREE CITY NAMES.
+      *-----------------------------------------------------------------
+           UNSTRING CITY-LIST
+           DELIMITED BY ',' OR ';'
+           INTO
+             STRING-LIST(1)
+             STRING-LIST(2)
+             STRING-LIST(3)
+           END-UNSTRING.
+           DISPLAY STRING-LIST(1)
+           DISPLAY STRING-LIST(2)
+           DISPLAY STRING-LIST(3)
+      *-----------------------------------------------------------------
+      * 2. ASSEMBLE NAME PARTS INTO A FORM SUITABLE FOR DISPLAY.
+      *    REPLACE THE CONTINUE STATEMENT IN PARAGRAPH FORMAT-NAME WITH
+      *    LOGIC TO FORMAT EITHER AN ENGLISH OR SPANISH NAME.
+      *    USE STRING TO ASSEMBLE THE NAME FIELDS INTO A SINGLE VALUE
+      *    FORMATTED LIKE THE FOLLOWING EXAMPLES:
+      *    - "SMITH, JOHN T." FOR AN ENGLISH NAME
+      *    - "ENRIQUE D. BENITEZ S." FOR A SPANISH NAME
+      *-----------------------------------------------------------------
+           MOVE SPACES TO NAME-PARTS
+           SET ENGLISH TO TRUE
+           MOVE "PaUL" TO FIRST-NAME
+           MOVE "MICHAEL" TO MIDDLE-NAME
+           MOVE "TANNER" TO LAST-NAME
+           PERFORM FORMAT-NAME
+           DISPLAY "NAME IS: " FORMATTED-NAME
+
+           MOVE SPACES TO NAME-PARTS
+           SET SPANISH TO TRUE
+           MOVE "DANIEL" TO PRIMER-NOMBRE
+           MOVE "ALEJANDRO" TO SEGUNDO-NOMBRE
+           MOVE "GUILLEN" TO PRIMER-APELLIDO
+           MOVE "HERNANDEZ" TO SEGUNDO-APELLIDO
+           PERFORM FORMAT-NAME
+           DISPLAY "NAME IS: " FORMATTED-NAME
+
+      *-----------------------------------------------------------------
+      * 3. REMOVE EXTRA SPACES FROM A STRING, LEAVING JUST ONE SPACE
+      *    IN BETWEEN THE TOKENS (WORDS) IN THE STRING.
+      *    ADD CODE AS NECESSARY TO THE WORKING-STORAGE SECTION AND THE
+      *    PROCEDURE DIVISION TO REMOVE EXTRANEOUS SPACES FROM THE
+      *    VALUE OF TEXT-WITH-EMBEDDED-SPACES.
+      *    USE DISPLAY TO SHOW THE RESULTING VALUE.
+      *-----------------------------------------------------------------
+           MOVE SPACES TO STRING-LISTS
+           MOVE SPACES TO FORMATTED-NAME
+           UNSTRING TEXT-WITH-EMBEDDED-SPACES
+           DELIMITED BY ALL SPACE
+           INTO
+             STRING-LIST(1)
+             STRING-LIST(2)
+             STRING-LIST(3)
+             STRING-LIST(4)
+             STRING-LIST(5)
+             STRING-LIST(6)
+             STRING-LIST(7)
+             STRING-LIST(8)
+           END-UNSTRING
+           STRING
+              STRING-LIST(1) DELIMITED BY SPACE
+              SPACE DELIMITED BY SIZE
+              STRING-LIST(2) DELIMITED BY SPACE
+              SPACE DELIMITED BY SIZE
+              STRING-LIST(3) DELIMITED BY SPACE
+              SPACE DELIMITED BY SIZE
+              STRING-LIST(4) DELIMITED BY SPACE
+              SPACE DELIMITED BY SIZE
+              STRING-LIST(5) DELIMITED BY SPACE
+              SPACE DELIMITED BY SIZE
+              STRING-LIST(6) DELIMITED BY SPACE
+              SPACE DELIMITED BY SIZE
+              STRING-LIST(7) DELIMITED BY SPACE
+              SPACE DELIMITED BY SIZE
+              STRING-LIST(8) DELIMITED BY SPACE
+              INTO FORMATTED-NAME
+           END-STRING
+           DISPLAY 'ORIGINAL TEXT: ' TEXT-WITH-EMBEDDED-SPACES
+           DISPLAY 'SPACES REMOVED: ' FORMATTED-NAME
+           GOBACK
+           .
+       FORMAT-NAME.
+           IF ENGLISH
+              STRING
+                 LAST-NAME DELIMITED BY SPACE
+                 ',' DELIMITED BY SIZE
+                 SPACE DELIMITED BY SIZE
+                 FIRST-NAME DELIMITED BY SPACE
+                 SPACE DELIMITED BY SIZE
+                 MIDDLE-NAME(1:1) DELIMITED BY SPACE
+                 '.' DELIMITED BY SIZE
+                 INTO FORMATTED-NAME
+              END-STRING
+           END-IF
+           IF SPANISH
+              STRING
+                 PRIMER-NOMBRE DELIMITED BY SPACE
+                 SPACE DELIMITED BY SIZE
+                 SEGUNDO-NOMBRE(1:1) DELIMITED BY SPACE
+                 '.' DELIMITED BY SIZE
+                 SPACE DELIMITED BY SIZE
+                 PRIMER-APELLIDO DELIMITED BY SPACE
+                 SPACE DELIMITED BY SIZE
+                 SEGUNDO-APELLIDO(1:1) DELIMITED BY SPACE
+                 '.' DELIMITED BY SIZE
+                 INTO FORMATTED-NAME
+              END-STRING
+           END-IF
+           .
+

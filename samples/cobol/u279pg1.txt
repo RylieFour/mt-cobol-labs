@@ -1,0 +1,214 @@
+       Identification Division.
+      *****************************************************************
+      * Sending plain text to a 3270 device.
+      *****************************************************************
+       Program-Id. U279PG1.
+      *****************************************************************
+       Data Division.
+       Working-Storage Section.
+       01  WS-Work-Fields.
+                  05  filler                 pic x value 'N'.
+                      88  End-of-Session           value 'Y'.
+                  05  WS-Resp                pic s9(08) binary.
+
+       01  Lab-File.
+           05 Lab-Key                        pic x(4).
+           05 Lab-Name                       pic x(12).
+           05 Lab-Dept                       pic x(12).
+           05 Lab-Role                       pic x(12).
+
+       01  FT-Container-Data.
+           05 Con-First-Time                 pic x.
+              88  First-Time                 value "Y".
+              88  After-First                value "T".
+           copy U279CNTR.
+
+       01  CICS-Response-Code                pic s9(9) binary.
+           copy U279MS1.
+           copy DFHAID.
+           copy DFHBMSCA.
+      *****************************************************************
+       Procedure Division.
+           move Low-Values to FT-Record
+           perform 1000-Housekeeping
+           Perform 2000-Mainline
+             until End-of-Session.
+      *****************************************************************
+       1000-Housekeeping.
+      *    set First-Time to true
+           move low-values to U279MP1O.
+      *****************************************************************
+       2000-Mainline.
+           move low-values to ft-record
+           perform 2300-Get-Container
+           evaluate CICS-Response-Code
+
+             when DFHRESP(NORMAL)
+
+               if First-Time
+                 perform 2400-PUT-CONTAINER
+                 perform 2900-Return-Channel
+               else
+                 perform 2050-Move-Container-to-WS
+                 perform 2200-Receive-Map
+
+                 if KEYL greater than -1
+                   move KEYI to Lab-Key
+                   perform 4000-Read-Ksds
+                 end-if
+
+                 perform 2250-Continue-Logic
+               end-if
+
+             when dfhresp(channelerr)
+                perform 2400-PUT-CONTAINER
+                perform 2900-Return-Channel
+
+             when other
+                perform 2400-PUT-CONTAINER
+                perform 2900-Return-Channel
+           end-evaluate.
+      *****************************************************************
+       2050-Move-Container-to-WS.
+             move ft-TRNIDO to TRNIDI
+             move ft-TASKNO to TASKNI
+             move ft-ACTO   to ACTI
+             move ft-KEYO   to KEYI
+             move ft-NAMEO  to NAMEI
+             move ft-DEPTO  to DEPTI
+             move ft-ROLEO  to ROLEI.
+      *****************************************************************
+       2100-Send-Map.
+           EXEC CICS SEND
+               From(U279MP1O)
+               MAP('U279MP1')
+               MAPSET('U279MS1')
+               ERASE
+               FREEKB
+           END-EXEC.
+      *****************************************************************
+       2200-Receive-Map.
+           EXEC CICS Receive
+               INTO(U279MP1I)
+               MAP('U279MP1')
+               MAPSET('U279MS1')
+               RESP(WS-RESP)
+           END-EXEC
+           if TRNIDL greater than -1
+             move TRNIDI to FT-TRNIDO
+           end-if
+           if TASKNL greater than -1
+             move TASKNI to FT-TASKNO
+           end-if
+           if ACTL greater than -1
+             move ACTI   to FT-ACTO
+           end-if
+           if KEYL greater than -1
+             move KEYI   to FT-KEYO
+           end-if
+           if NAMEL greater than -1
+             move NAMEI  to FT-NAMEO
+           end-if
+           if DEPTL greater than -1
+             move DEPTI  to FT-DEPTO
+           end-if
+           if ROLEL greater than -1
+             move ROLEI  to FT-ROLEO
+           end-if
+           if WS-RESP = DFHRESP(MAPFAIL)
+             continue
+           end-if.
+      *****************************************************************
+       2250-Continue-Logic.
+           if EIBAID = DFHPF12
+             set End-of-Session to true
+             perform 3000-Wrap-Up
+           end-if
+                 move EIBTRNID to TRNIDO
+                 move EIBTASKN to TASKNO
+
+           perform 2100-Send-Map
+           perform 2400-PUT-CONTAINER
+           perform 2900-Return-Channel.
+      *****************************************************************
+       2300-Get-Container.
+           EXEC CICS GET CONTAINER(FT-CONTAINER-NAME)
+             CHANNEL(FT-CHANNEL-NAME)
+             INTO(FT-Record)
+             FLENGTH(LENGTH OF FT-Record)
+             RESP(CICS-RESPONSE-CODE)
+           END-EXEC
+           EVALUATE CICS-Response-Code
+             WHEN DFHRESP(NORMAL)
+               continue
+               WHEN OTHER
+                 PERFORM 4500-Big-Error
+           END-EVALUATE.
+      *****************************************************************
+       2400-PUT-CONTAINER.
+           EXEC CICS PUT CONTAINER(FT-CONTAINER-NAME)
+             CHANNEL(FT-CHANNEL-NAME)
+             FROM(FT-Record)
+             FLENGTH(LENGTH OF FT-Record)
+             RESP(CICS-RESPONSE-CODE)
+           END-EXEC
+           EVALUATE CICS-Response-Code
+             WHEN DFHRESP(NORMAL)
+               continue
+               WHEN OTHER
+                 PERFORM 4500-Big-Error
+           END-EVALUATE.
+      *****************************************************************
+       2900-Return-Channel.
+           EXEC CICS RETURN
+             TRANSID(TRNIDO)
+             CHANNEL(FT-CHANNEL-NAME)
+           END-EXEC.
+      *****************************************************************
+       3000-Wrap-Up.
+           EXEC CICS SEND CONTROL
+               ERASE
+               FREEKB
+           END-EXEC
+           Exec CICS
+             Return
+           End-Exec.
+      *****************************************************************
+       4000-Read-Ksds.
+      *    MOVE ZEROES TO CICS-Response-Code
+
+           EXEC CICS READ
+                FILE('U279KS1')
+                RIDFLD(Lab-Key)
+                INTO(Lab-File)
+                RESP(CICS-Response-Code)
+           END-EXEC
+
+           EVALUATE CICS-Response-Code
+             WHEN DFHRESP(NORMAL)
+               PERFORM 4050-Move-KSDS-to-Map
+               WHEN DFHRESP(NOTFND)
+                 PERFORM 4400-Cust-Not-Found
+               WHEN OTHER
+                 PERFORM 4500-Big-Error
+           END-EVALUATE.
+      *****************************************************************
+       4050-Move-KSDS-to-Map.
+           move Lab-Key  to KEYO
+           move Lab-Name to NAMEO
+           move Lab-Dept to DEPTO
+           move Lab-Role to ROLEO.
+      *4000-Write-Ksds.
+      *****************************************************************
+      *4000-Update-Ksds.
+      *****************************************************************
+      *4000-Delete-Ksds.
+      *****************************************************************
+       4400-Cust-Not-Found.
+           move 'Cust not fnd' to NAMEO
+           perform 2100-Send-Map.
+      *****************************************************************
+       4500-Big-Error.
+           move 'BIG ERROR' to NAMEO.
+      *    perform 2100-Send-Map.
+

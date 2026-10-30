@@ -1,0 +1,69 @@
+       Identification Division.
+       Program-Id. LAB25.
+      ***********************************************************
+       Environment Division.
+       Input-Output Section.
+       File-Control.
+           Select Input-File
+           Assign to INFILE
+           Organization is sequential
+           Access mode is sequential
+           File Status is Input-File-Status.
+      ***********************************************************
+       Data Division.
+       File Section.
+       FD  Input-File
+           Recording mode is F
+           Record contains 80 characters.
+       01  Input-Record    pic x(80).
+
+       Working-Storage Section.
+       01  File-Status-Areas.
+           05  Input-File-Status  pic x(2).
+              88  Input-File-Success value "00".
+              88  End-of-Input       value "10".
+              88  File-Not-Found     value "35".
+      ***********************************************************
+       Procedure Division.
+           perform 1000-Housekeeping
+           perform 2000-Process-Data
+              until End-of-Input
+           perform 3000-Wrap-Up
+           goback.
+       1000-Housekeeping.
+           open input Input-File
+           if Input-File-Success
+              continue
+           else
+              display "Got " Input-File-Status " on Open Input"
+              move 12 to Return-Code
+              goback.
+       2000-Process-Data.
+           display Input-File-Status
+           perform 2200-Read-Input
+           evaluate True
+             when Input-File-Success
+               continue
+             when End-of-Input
+               display "Empty input file"
+               move 4 to Return-Code
+               goback
+             when other
+               display "File Status "
+                   Input-File-Status " on read"
+               move 12 to Return-Code
+               goback
+           end-evaluate
+           Display Input-Record.
+       2200-Read-Input.
+           read Input-File
+           if not Input-File-Success
+           and not End-of-Input
+           display "File Status "
+               Input-File-Status " on read"
+               move 12 to Return-Code
+           display 'help'
+               goback.
+       3000-Wrap-Up.
+           close Input-File.
+

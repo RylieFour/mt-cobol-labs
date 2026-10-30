@@ -1,0 +1,17 @@
+//USER279E  JOB ,'RYLIE',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1),             00010002
+//          REGION=0M,NOTIFY=&SYSUID                                    00020000
+//JOBLIB    DD DSN=&SYSUID..LAB.PROGLIB,DISP=SHR                        00021000
+//STEP1     EXEC PGM=IEFBR14                                            00021100
+//DELETE    DD DSN=USER279.LAB.OUTFILES.LAB27O1,                        00021202
+//             DISP=(MOD,DELETE,DELETE),                                00021300
+//             DSORG=PS,DCB=(RECFM=FB,LRECL=80,BLKSIZE=16000),          00021400
+//             SPACE=(TRK,(0),RLSE)                                     00021500
+//STEP2    EXEC PGM=LAB27UPD                                            00021605
+//MASTER    DD DSN=USER279.LAB.KSLAB27,DISP=SHR                         00021701
+//RESULTS   DD DSN=USER279.LAB.RESULTS,DISP=SHR                         00021803
+//OUTFILE   DD DSN=USER279.LAB.OUTFILES.LAB27O1,              ,         00021904
+//             DISP=(NEW,CATLG,DELETE),                                 00022000
+//             DSORG=PS,DCB=(RECFM=FB,LRECL=52,BLKSIZE=5200),           00022104
+//             SPACE=(TRK,(1,2),RLSE)                                   00022200
+//SYSOUT       DD SYSOUT=*                                              00022300
+
