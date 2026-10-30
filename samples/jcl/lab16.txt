@@ -1,0 +1,26 @@
+//LAB16RYL  JOB ,'RYLIE',CLASS=A,MSGCLASS=A,MSGLEVEL=(1,1),             00010001
+//          REGION=0M,NOTIFY=&SYSUID                                    00020000
+//*********************************************                         00020109
+//STEP1     EXEC PGM=IEFBR14                                            00020409
+//CABRMS    DD DSN=USER279.LAB.LAB16,                                   00021009
+//             DISP=(MOD,KEEP,DELETE),                                  00021109
+//             DCB=(DSORG=PS,RECFM=FB,LRECL=80,BLKSIZE=16000),          00021209
+//             SPACE=(TRK,(1,1))                                        00021309
+//*********************************************                         00025003
+//STEP2     EXEC PGM=IEBGENER                                           00030002
+//SYSOUT    DD SYSOUT=*                                                 00040000
+//SYSPRINT  DD SYSOUT=*                                                 00050000
+//SYSUT1    DD *                                                        00070003
+ALPHA     BETA      DELTA     GAMMA                                     00070103
+ONE       TWO       THREE     FOUR                                      00070203
+//SYSUT2    DD DSN=USER279.LAB.LAB16,                                   00073008
+//             DISP=(NEW,CATLG,DELETE),                                 00074000
+//             DCB=(DSORG=PS,RECFM=FB,LRECL=80,BLKSIZE=16000),          00075000
+//             SPACE=(TRK,(1,1))                                        00076000
+//SYSIN     DD *                                                        00077003
+  GENERATE MAXFLDS=4                                                    00077107
+  RECORD FIELD=(10,21,,1),                                              00078005
+         FIELD=(10,1,,11),                                              00079005
+         FIELD=(10,11,,21),                                             00080005
+         FIELD=(10,31,,31)                                              00090006
+

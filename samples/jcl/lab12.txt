@@ -1,0 +1,13 @@
+//LAB12RYL  JOB ,'RYLIE',CLASS=A,MSGCLASS=A,MSGLEVEL=(1,1),             00010002
+//          REGION=0M,NOTIFY=&SYSUID                                    00020000
+//STEP1     EXEC PGM=IEFBR14                                            00030000
+//DELETE    DD DSN=USER279.LAB.BMS,DISP=(MOD,KEEP,DELETE),              00031006
+//             DSNTYPE=LIBRARY,                                         00032001
+//             DCB=(DSORG=PO,RECFM=FB,LRECL=80,BLKSIZE=16000),          00032101
+//             SPACE=(80,(20,2),RLSE)                                   00033001
+//STEP2     EXEC PGM=IEFBR14                                            00034000
+//CREATE    DD DSN=USER279.LAB.BMS,DISP=(NEW,CATLG,DELETE),             00035006
+//             DSNTYPE=LIBRARY,                                         00035101
+//             DCB=(DSORG=PO,RECFM=FB,LRECL=80,BLKSIZE=16000),          00035201
+//             SPACE=(80,(20,2),RLSE)                                   00035401
+

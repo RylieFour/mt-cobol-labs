@@ -1,0 +1,7 @@
+//USER279B  JOB ,'RYLIE',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1),             00010000
+//          REGION=0M,NOTIFY=&SYSUID                                    00020000
+//JOBLIB    DD DSN=&SYSUID..LAB.PROGLIB,DISP=SHR                        00021000
+//STEP1    EXEC PGM=LAB25                                               00022001
+//INFILE    DD DSN=USER279.DEMO.QSAM,DISP=SHR                           00022101
+//SYSOUT       DD SYSOUT=*                                              00023000
+

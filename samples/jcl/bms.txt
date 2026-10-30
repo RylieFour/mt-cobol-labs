@@ -1,0 +1,14 @@
+//USER279M JOB ,'BMS ASSEMBLY',                                         00010000
+//            CLASS=A,MSGCLASS=A,MSGLEVEL=(1,1),TIME=1440,              00011000
+//            REGION=0M,NOTIFY=&SYSUID                                  00012000
+// SET MAPNAME=U279MS1                                                  00012104
+// SET INDEX=DFH610.CICS                                                00012200
+//IBMLIB   JCLLIB ORDER=(DFH610.CICS.SDFHPROC)                          00012300
+//ASM      EXEC DFHMAPS,                                                00012400
+//            DSCTLIB=&SYSUID..LAB.COPYLIB,                             00012500
+//            MAPLIB=&INDEX..SDFHLOAD,                                  00012600
+//            MAPNAME=&MAPNAME                                          00012700
+//COPY.SYSUT1 DD DISP=SHR,DSN=&SYSUID..LAB.BMS(&MAPNAME)                00012800
+//ASMMAP.SYSLIB DD DISP=SHR,DSN=DFH610.CICS.SDFHMAC                     00012900
+//ASMDSECT.SYSLIB DD DISP=SHR,DSN=DFH610.CICS.SDFHMAC                   00013000
+

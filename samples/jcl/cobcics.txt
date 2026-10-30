@@ -1,0 +1,16 @@
+//USER2791 JOB ,'CICS COMPILE',                                         00010000
+//            CLASS=A,MSGCLASS=A,MSGLEVEL=(1,1),TIME=1440,              00011000
+//            REGION=0M,NOTIFY=&SYSUID                                  00012000
+//         JCLLIB ORDER=(DFH610.CICS.SDFHPROC)                          00012100
+//COMPILE  EXEC DFHZITCL,PROGLIB=DFH610.CICS.SDFHLOAD,                  00012200
+//            INDEX=DFH610.CICS,                                        00012300
+//            LNGPRFX=IGY640,                                           00012400
+//            DSCTLIB=DFH610.CICS.SDFHCOB                               00012500
+//COBOL.SYSIN DD DISP=SHR,                                              00012600
+//            DSN=&SYSUID..LAB.COBOL(U279PG2)                           00012703
+//COBOL.SYSLIB DD DISP=SHR,                                             00012800
+//            DSN=&SYSUID..LAB.COPYLIB                                  00012900
+//LKED.SYSIN  DD *                                                      00013000
+   NAME U279PG2(R)                                                      00014003
+/*                                                                      00015000
+

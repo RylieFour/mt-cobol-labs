@@ -1,0 +1,7 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. LAB17.
+       PROCEDURE DIVISION.
+           DISPLAY "I AM BEING WATCHED BY AN EXPO MARKER."
+           GOBACK
+           .
+

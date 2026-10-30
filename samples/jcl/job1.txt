@@ -1,0 +1,10 @@
+//USER279B  JOB ,'RYLIE',CLASS=A,MSGCLASS=A,MSGLEVEL=(1,1),             00010002
+//          NOTIFY=&SYSUID                                              00020000
+WELL HERE IS SOMETHING I GUESS                                          00030002
+IT IS VERY COLD IN THIS BUILDING                                        00040002
+IT IS VERY COLD IN THIS BUILDING                                        00050002
+IT IS VERY COLD IN THIS BUILDING                                        00060002
+IT IS VERY COLD IN THIS BUILDING                                        00070002
+IT IS VERY COLD IN THIS BUILDING                                        00080002
+IT IS VERY COLD IN THIS BUILDING                                        00090002
+
